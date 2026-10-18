@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#3b4cc0">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>دو صفحهٔ مختلط</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Vazirmatn:wght@400;500;700&display=swap">
+<style>
+/* Layout: one working column. Function input and examples on top, the z and w planes side by side (stacked on phones), readout and range controls below. */
+:root{
+  --bg:#f4f5f9;
+  --panel:#ffffff;
+  --fg:#1b1e2c;
+  --muted:#5b6178;
+  --line:#d8dbe6;
+  --axis:#aab0c3;
+  --re:#d9622b;
+  --im:#2f6fd1;
+  --loop:#c2307f;
+  --accent:#3b4cc0;
+  --danger:#b3261e;
+  --font-body:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12141c;--panel:#1a1d28;--fg:#e8eaf3;--muted:#9aa1b9;--line:#2c3041;--axis:#4b5169;
+    --re:#ef8a55;--im:#6e9ef2;--loop:#e872b0;--accent:#8e9dff;--danger:#ff8a80;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12141c;--panel:#1a1d28;--fg:#e8eaf3;--muted:#9aa1b9;--line:#2c3041;--axis:#4b5169;
+  --re:#ef8a55;--im:#6e9ef2;--loop:#e872b0;--accent:#8e9dff;--danger:#ff8a80;
+  color-scheme:dark;
+}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.7;
+  padding-block:20px 32px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+main{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.4rem;font-weight:700;margin:0;line-height:1.4;text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.inp{display:flex;align-items:center;gap:10px;direction:ltr}
+.inp label{font-family:var(--font-mono);color:var(--muted);font-size:1.05rem;white-space:nowrap}
+#fx{
+  flex:1;min-width:0;font-family:var(--font-mono);font-size:1.1rem;padding:9px 12px;
+  background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;
+}
+#fx:focus-visible,button:focus-visible,input[type=range]:focus-visible,canvas:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#fx[aria-invalid="true"]{border-color:var(--danger)}
+#err{margin:-6px 0 0;min-height:1.6em;color:var(--danger);font-size:.88rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px;direction:ltr}
+.chips button{
+  font-family:var(--font-mono);font-size:.82rem;padding:3px 10px;background:var(--panel);color:var(--fg);
+  border:1px solid var(--line);border-radius:999px;cursor:pointer;
+}
+.chips button:hover{border-color:var(--accent)}
+.chips button.on{border-color:var(--accent);color:var(--accent)}
+.planes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.planes figure{margin:0;min-width:0}
+.planes canvas{
+  display:block;width:100%;height:auto;aspect-ratio:1;max-width:100%;
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;
+}
+#cz{touch-action:none;cursor:crosshair}
+figcaption{margin-top:6px;font-size:.88rem;color:var(--muted);text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid}
+.legend .d{border-top-style:dashed}
+.read{
+  display:flex;flex-wrap:wrap;gap:6px 24px;margin:0;padding:10px 12px;background:var(--panel);
+  border:1px solid var(--line);border-radius:6px;font-family:var(--font-mono);font-size:.92rem;direction:ltr;
+}
+.read span{min-width:0;overflow-wrap:anywhere}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px 24px;align-items:center}
+.ctl label{display:flex;flex-direction:column;gap:2px;font-size:.88rem;color:var(--muted)}
+.ctl label b{font-weight:500;color:var(--fg)}
+.ctl input[type=range]{width:100%;accent-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.row button{
+  font-family:var(--font-body);font-size:.88rem;padding:5px 14px;background:var(--panel);color:var(--fg);
+  border:1px solid var(--line);border-radius:6px;cursor:pointer;
+}
+.row button:hover{border-color:var(--accent)}
+.row label{font-size:.88rem;display:inline-flex;align-items:center;gap:6px}
+details{font-size:.88rem;color:var(--muted)}
+summary{cursor:pointer;color:var(--fg)}
+details p{margin:8px 0 0}
+code{font-family:var(--font-mono);font-size:.85em;direction:ltr;unicode-bidi:isolate}
+body{margin:0}
+</style>
+</head>
+<body>
+<main dir="rtl" lang="fa">
+  <header>
+    <h1>دو صفحهٔ مختلط</h1>
+    <p class="sub">تابع دلخواه را بنویسید تا تصویر شبکهٔ صفحهٔ z را در صفحهٔ w ببینید. نقطه را در صفحهٔ z بکشید.</p>
+  </header>
+
+  <div class="inp">
+    <label for="fx">f(z) =</label>
+    <input id="fx" type="text" value="sqrt(z)" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="err">
+  </div>
+  <p id="err" role="alert"></p>
+  <div class="chips" id="chips"></div>
+
+  <section class="planes">
+    <figure><canvas id="cz" tabindex="0" role="img" aria-label="صفحهٔ z؛ با کشیدن یا کلیدهای جهت‌نما نقطه را جابه‌جا کنید"></canvas><figcaption>صفحهٔ z</figcaption></figure>
+    <figure><canvas id="cw" role="img" aria-label="صفحهٔ w؛ تصویر شبکه و نقطه زیر تابع f"></canvas><figcaption id="capw">صفحهٔ w</figcaption></figure>
+  </section>
+
+  <div class="legend">
+    <span><i style="border-color:var(--re)"></i>Re z ثابت</span>
+    <span><i style="border-color:var(--im)"></i>Im z ثابت</span>
+    <span><i class="d" style="border-color:var(--loop)"></i>دایرهٔ |z| = r</span>
+  </div>
+
+  <p class="read"><span id="oz"></span><span id="ow"></span></p>
+
+  <section class="ctl">
+    <label for="rz"><span>بازهٔ صفحهٔ z: <b id="rzo"></b></span><input id="rz" type="range" min="-1" max="1.7" step="0.01" value="0.301"></label>
+    <label for="rw"><span>بازهٔ صفحهٔ w: <b id="rwo"></b></span><input id="rw" type="range" min="-1" max="3" step="0.01" value="0.301"></label>
+  </section>
+  <div class="row">
+    <button id="fit" type="button">برازش بازهٔ w</button>
+    <label for="loop"><input id="loop" type="checkbox" checked>نمایش دایره حول مبدأ</label>
+  </div>
+
+  <details>
+    <summary>راهنمای نوشتن تابع</summary>
+    <p><code>z</code> متغیر است، <code>i</code> واحد موهومی و <code>pi</code> و <code>e</code> ثابت‌ها. عملگرها: <code>+ - * / ^</code>. ضرب ضمنی هم کار می‌کند، مثل <code>2z</code> یا <code>(z+1)(z-1)</code>.</p>
+    <p>توابع: <code>exp sin cos tan sinh cosh tanh log ln sqrt asin acos atan abs conj re im arg</code>. شاخهٔ اصلی log و sqrt و توان‌های غیرصحیح استفاده می‌شود، برای همین روی برش شاخه خط‌ها پاره می‌شوند.</p>
+  </details>
+</main>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var cz=$('cz'),cw=$('cw'),fx=$('fx'),err=$('err'),rzS=$('rz'),rwS=$('rw'),loopC=$('loop');
+var f=null,za=0.8,zb=0.5,Rz=2,Rw=2;
+
+var cadd=function(p,q){return[p[0]+q[0],p[1]+q[1]]};
+var csub=function(p,q){return[p[0]-q[0],p[1]-q[1]]};
+var cmul=function(p,q){return[p[0]*q[0]-p[1]*q[1],p[0]*q[1]+p[1]*q[0]]};
+var cdiv=function(p,q){var d=q[0]*q[0]+q[1]*q[1];return d===0?[NaN,NaN]:[(p[0]*q[0]+p[1]*q[1])/d,(p[1]*q[0]-p[0]*q[1])/d]};
+var cexp=function(p){var e=Math.exp(p[0]);return[e*Math.cos(p[1]),e*Math.sin(p[1])]};
+var clog=function(p){return[Math.log(Math.hypot(p[0],p[1])),Math.atan2(p[1],p[0])]};
+var csqrt=function(p){var r=Math.sqrt(Math.hypot(p[0],p[1])),t=Math.atan2(p[1],p[0])/2;return[r*Math.cos(t),r*Math.sin(t)]};
+var cpow=function(a,b){
+  if(b[1]===0&&Number.isInteger(b[0])&&Math.abs(b[0])<=64){
+    var n=Math.abs(b[0]),r=[1,0],x=a;
+    while(n){if(n&1)r=cmul(r,x);x=cmul(x,x);n=Math.floor(n/2)}
+    return b[0]<0?cdiv([1,0],r):r;
+  }
+  if(a[0]===0&&a[1]===0)return b[0]>0?[0,0]:[NaN,NaN];
+  return cexp(cmul(b,clog(a)));
+};
+var csin=function(p){return[Math.sin(p[0])*Math.cosh(p[1]),Math.cos(p[0])*Math.sinh(p[1])]};
+var ccos=function(p){return[Math.cos(p[0])*Math.cosh(p[1]),-Math.sin(p[0])*Math.sinh(p[1])]};
+var csinh=function(p){return[Math.sinh(p[0])*Math.cos(p[1]),Math.cosh(p[0])*Math.sin(p[1])]};
+var ccosh=function(p){return[Math.cosh(p[0])*Math.cos(p[1]),Math.sinh(p[0])*Math.sin(p[1])]};
+var casin=function(p){var iz=[-p[1],p[0]],s=csqrt(csub([1,0],cmul(p,p))),l=clog(cadd(iz,s));return[l[1],-l[0]]};
+var cacos=function(p){var a=casin(p);return[Math.PI/2-a[0],-a[1]]};
+var catan=function(p){var iz=[-p[1],p[0]],d=csub(clog(csub([1,0],iz)),clog(cadd([1,0],iz)));return[-d[1]/2,d[0]/2]};
+var FN={
+  sin:csin,cos:ccos,tan:function(p){return cdiv(csin(p),ccos(p))},
+  sinh:csinh,cosh:ccosh,tanh:function(p){return cdiv(csinh(p),ccosh(p))},
+  exp:cexp,log:clog,ln:clog,sqrt:csqrt,
+  asin:casin,acos:cacos,atan:catan,
+  abs:function(p){return[Math.hypot(p[0],p[1]),0]},
+  conj:function(p){return[p[0],-p[1]]},
+  arg:function(p){return[Math.atan2(p[1],p[0]),0]},
+  re:function(p){return[p[0],0]},
+  im:function(p){return[p[1],0]}
+};
+var NAMES=Object.keys(FN).concat(['pi','e','i','z']).sort(function(a,b){return b.length-a.length});
+
+function tokenize(s){
+  s=s.replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)})
+     .replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)})
+     .replace(/٫/g,'.').replace(/[−–]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/')
+     .replace(/\s+/g,'').toLowerCase();
+  var out=[],i=0;
+  while(i<s.length){
+    var c=s[i],m;
+    if(/[0-9.]/.test(c)){
+      m=/^(\d+\.?\d*|\.\d+)/.exec(s.slice(i));
+      if(!m)throw new Error('عدد نامعتبر است.');
+      out.push({t:'num',v:parseFloat(m[1])});i+=m[1].length;
+    }else if('+-*/^()'.indexOf(c)>=0){
+      out.push({t:'op',v:c});i++;
+    }else{
+      var hit=null;
+      for(var k=0;k<NAMES.length;k++){if(s.startsWith(NAMES[k],i)){hit=NAMES[k];break}}
+      if(!hit)throw new Error('نماد «'+s.slice(i,i+3)+'» شناخته نشد.');
+      out.push({t:'name',v:hit});i+=hit.length;
+    }
+  }
+  return out;
+}
+
+function compile(src){
+  var toks=tokenize(src),p=0;
+  var isOp=function(v){return p<toks.length&&toks[p].t==='op'&&toks[p].v===v};
+  function expr(){
+    var l=term();
+    while(isOp('+')||isOp('-')){
+      var o=toks[p++].v,r=term(),L=l;
+      l=o==='+'?(function(L,r){return function(a,b){return cadd(L(a,b),r(a,b))}})(L,r):(function(L,r){return function(a,b){return csub(L(a,b),r(a,b))}})(L,r);
+    }
+    return l;
+  }
+  function term(){
+    var l=unary();
+    for(;;){
+      var o=null;
+      if(isOp('*')||isOp('/')){o=toks[p++].v}
+      else if(p<toks.length&&(toks[p].t==='num'||toks[p].t==='name'||isOp('('))){o='*'}
+      else break;
+      var r=unary();
+      l=o==='*'?(function(L,r){return function(a,b){return cmul(L(a,b),r(a,b))}})(l,r):(function(L,r){return function(a,b){return cdiv(L(a,b),r(a,b))}})(l,r);
+    }
+    return l;
+  }
+  function unary(){
+    if(isOp('-')){p++;var u=unary();return function(a,b){var v=u(a,b);return[-v[0],-v[1]]}}
+    if(isOp('+')){p++;return unary()}
+    return power();
+  }
+  function power(){
+    var base=primary();
+    if(isOp('^')){p++;var e=unary();return function(a,b){return cpow(base(a,b),e(a,b))}}
+    return base;
+  }
+  function primary(){
+    var t=toks[p++];
+    if(!t)throw new Error('عبارت ناقص است.');
+    if(t.t==='num'){var nv=[t.v,0];return function(){return nv}}
+    if(t.t==='op'&&t.v==='('){
+      var e=expr();
+      if(!isOp(')'))throw new Error('پرانتز بسته نشده است.');
+      p++;return e;
+    }
+    if(t.t==='name'){
+      if(Object.prototype.hasOwnProperty.call(FN,t.v)){
+        if(!isOp('('))throw new Error('بعد از «'+t.v+'» پرانتز بنویسید، مثل '+t.v+'(z).');
+        p++;var arg=expr();
+        if(!isOp(')'))throw new Error('پرانتز «'+t.v+'» بسته نشده است.');
+        p++;var g=FN[t.v];
+        return function(a,b){return g(arg(a,b))};
+      }
+      if(t.v==='z')return function(a,b){return[a,b]};
+      if(t.v==='i'){var iv=[0,1];return function(){return iv}}
+      if(t.v==='pi'){var pv=[Math.PI,0];return function(){return pv}}
+      if(t.v==='e'){var ev=[Math.E,0];return function(){return ev}}
+    }
+    throw new Error('«'+t.v+'» در این جای عبارت درست نیست.');
+  }
+  var root=expr();
+  if(p<toks.length)throw new Error('«'+toks[p].v+'» در انتهای عبارت اضافه است.');
+  return root;
+}
+
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function nice(R){
+  var raw=R/3,pw=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/pw;
+  return (m<1.5?1:m<3.5?2:m<7.5?5:10)*pw;
+}
+function num(x){
+  if(!isFinite(x))return '∞';
+  var a=Math.abs(x);
+  if(a>=1e4||(a<1e-3&&a!==0))return x.toExponential(2);
+  return String(Math.round(x*1000)/1000);
+}
+function cstr(c){
+  if(!isFinite(c[0])||!isFinite(c[1]))return '∞';
+  return num(c[0])+(c[1]<0||Object.is(c[1],-0)?' − ':' + ')+num(Math.abs(c[1]))+'i';
+}
+function tick(v){return String(parseFloat(v.toPrecision(3)))}
+function fitCanvas(c){
+  var s=c.clientWidth;if(!s)return null;
+  var d=Math.min(window.devicePixelRatio||1,3);
+  c.width=Math.round(s*d);c.height=Math.round(s*d);
+  var x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);
+  return[x,s];
+}
+
+function plane(c,R,map){
+  var fc=fitCanvas(c);if(!fc)return;
+  var x=fc[0],S=fc[1],h=S/2,k=h/R;
+  var pt=function(a,b){return[h+a*k,h-b*k]};
+  x.clearRect(0,0,S,S);
+
+  var axis=css('--axis'),muted=css('--muted');
+  x.lineWidth=1;x.strokeStyle=axis;x.beginPath();
+  x.moveTo(0,h);x.lineTo(S,h);x.moveTo(h,0);x.lineTo(h,S);x.stroke();
+  var ts=nice(R);
+  x.fillStyle=muted;x.font='10px "IBM Plex Mono",monospace';
+  for(var m=1;m*ts<R*0.97;m++){
+    for(var sg=-1;sg<=1;sg+=2){
+      var v=sg*m*ts,px=h+v*k,py=h-v*k;
+      x.beginPath();x.moveTo(px,h-3);x.lineTo(px,h+3);x.moveTo(h-3,py);x.lineTo(h+3,py);x.stroke();
+      x.textAlign='center';x.fillText(tick(v),px,h+15);
+      x.textAlign='left';x.fillText(tick(v),h+7,py+3);
+    }
+  }
+  x.textAlign='right';x.fillText('Re',S-4,h-7);
+  x.textAlign='left';x.fillText('Im',h+7,11);
+
+  var box=1.5*R;
+  var draw=function(pts,col,w,dash){
+    x.strokeStyle=col;x.lineWidth=w;x.setLineDash(dash||[]);x.beginPath();
+    var prev=null;
+    for(var n=0;n<pts.length;n++){
+      var q=pts[n];
+      if(!isFinite(q[0])||!isFinite(q[1])||Math.abs(q[0])>1e6||Math.abs(q[1])>1e6){prev=null;continue}
+      if(prev){
+        var qin=Math.abs(q[0])<=box&&Math.abs(q[1])<=box,pin=Math.abs(prev[0])<=box&&Math.abs(prev[1])<=box;
+        if((!qin&&!pin)||(qin&&pin&&Math.hypot(q[0]-prev[0],q[1]-prev[1])>R*0.5))prev=null;
+      }
+      var p=pt(q[0],q[1]);
+      if(prev)x.lineTo(p[0],p[1]);else x.moveTo(p[0],p[1]);
+      prev=q;
+    }
+    x.stroke();x.setLineDash([]);
+  };
+
+  var gs=nice(Rz)/2,N=360,kmax=Math.floor(Rz/gs+1e-9);
+  var cRe=css('--re'),cIm=css('--im');
+  var vert=[],hor=[];
+  for(var i=-kmax;i<=kmax;i++){
+    var g=i*gs,vv=[],hh=[];
+    for(var j=0;j<=N;j++){
+      var t=-Rz+2*Rz*j/N;
+      vv.push(map(g,t));hh.push(map(t,g));
+    }
+    vert.push([vv,i===0]);hor.push([hh,i===0]);
+  }
+  hor.forEach(function(o){draw(o[0],cIm,o[1]?2:1.1)});
+  vert.forEach(function(o){draw(o[0],cRe,o[1]?2:1.1)});
+
+  var r=Math.hypot(za,zb);
+  if(loopC.checked&&r>1e-9){
+    var cp=[];
+    for(var u=0;u<=N;u++){var th=2*Math.PI*u/N;cp.push(map(r*Math.cos(th),r*Math.sin(th)))}
+    draw(cp,css('--loop'),2,[6,4]);
+  }
+
+  var q0=map(za,zb);
+  if(isFinite(q0[0])&&isFinite(q0[1])&&Math.abs(q0[0])<=R*1.05&&Math.abs(q0[1])<=R*1.05){
+    var pp=pt(q0[0],q0[1]);
+    x.fillStyle=css('--fg');x.strokeStyle=css('--panel');x.lineWidth=2;
+    x.beginPath();x.arc(pp[0],pp[1],5.5,0,Math.PI*2);x.stroke();x.fill();
+  }
+}
+
+function updateLabels(){
+  $('rzo').textContent='±'+num(Rz);
+  $('rwo').textContent='±'+num(Rw);
+}
+function draw(){
+  if(!f)return;
+  plane(cz,Rz,function(a,b){return[a,b]});
+  plane(cw,Rw,f);
+  var w=f(za,zb);
+  $('oz').textContent='z = '+cstr([za,zb]);
+  $('ow').textContent='f(z) = '+cstr(w);
+  $('capw').textContent='صفحهٔ w = f(z)';
+  updateLabels();
+}
+
+function autofit(){
+  if(!f)return;
+  var vals=[],n=36;
+  for(var i=0;i<=n;i++)for(var j=0;j<=n;j++){
+    var w=f(-Rz+2*Rz*i/n,-Rz+2*Rz*j/n),m=Math.max(Math.abs(w[0]),Math.abs(w[1]));
+    if(isFinite(m))vals.push(m);
+  }
+  if(vals.length<10)return;
+  vals.sort(function(a,b){return a-b});
+  var q=vals[Math.floor(vals.length*0.85)];
+  var steps=[0.5,1,1.5,2,3,4,5,6,8,10,15,20,30,50,100,200,500,1000];
+  var R=1000;
+  for(var s=0;s<steps.length;s++){if(steps[s]>=q*1.05){R=steps[s];break}}
+  Rw=R;rwS.value=Math.log10(R);draw();
+}
+
+var CHIPS=['z^2','1/z','sqrt(z)','exp(z)','exp(1/z)','(z-1)/(z+1)','z+1/z','sin(z)','log(z)','z^3-1'];
+var chipBox=$('chips');
+CHIPS.forEach(function(s){
+  var b=document.createElement('button');b.type='button';b.textContent=s;
+  b.addEventListener('click',function(){fx.value=s;apply();autofit()});
+  chipBox.appendChild(b);
+});
+function markChips(){
+  var cur=fx.value.replace(/\s+/g,'');
+  Array.prototype.forEach.call(chipBox.children,function(b){b.className=b.textContent===cur?'on':''});
+}
+function apply(){
+  try{
+    var g=compile(fx.value);
+    var t=g(0.7,0.4);
+    if(!t||t.length!==2)throw new Error('عبارت نامعتبر است.');
+    f=g;err.textContent='';fx.setAttribute('aria-invalid','false');
+    try{localStorage.setItem('cplx-expr',fx.value)}catch(e){}
+  }catch(e){
+    err.textContent=e.message||'عبارت نامعتبر است.';
+    fx.setAttribute('aria-invalid','true');
+  }
+  markChips();draw();
+}
+fx.addEventListener('input',apply);
+fx.addEventListener('change',function(){if(fx.getAttribute('aria-invalid')==='false')autofit()});
+$('fit').addEventListener('click',autofit);
+loopC.addEventListener('change',draw);
+rzS.addEventListener('input',function(){
+  Rz=Math.pow(10,parseFloat(rzS.value));
+  za=Math.max(-Rz,Math.min(Rz,za));zb=Math.max(-Rz,Math.min(Rz,zb));draw();
+});
+rwS.addEventListener('input',function(){Rw=Math.pow(10,parseFloat(rwS.value));draw()});
+
+function setZ(e){
+  var r=cz.getBoundingClientRect(),s=r.width;
+  za=Math.max(-Rz,Math.min(Rz,((e.clientX-r.left)/s-0.5)*2*Rz));
+  zb=Math.max(-Rz,Math.min(Rz,-((e.clientY-r.top)/s-0.5)*2*Rz));
+  draw();
+}
+var down=false;
+cz.addEventListener('pointerdown',function(e){down=true;try{cz.setPointerCapture(e.pointerId)}catch(x){}setZ(e)});
+cz.addEventListener('pointermove',function(e){if(down)setZ(e)});
+cz.addEventListener('pointerup',function(){down=false});
+cz.addEventListener('pointercancel',function(){down=false});
+cz.addEventListener('keydown',function(e){
+  var st=Rz/(e.shiftKey?10:40),d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
+  if(!d)return;
+  e.preventDefault();
+  za=Math.max(-Rz,Math.min(Rz,za+d[0]*st));zb=Math.max(-Rz,Math.min(Rz,zb+d[1]*st));draw();
+});
+
+if(window.ResizeObserver){var ro=new ResizeObserver(draw);ro.observe(cz);ro.observe(cw)}
+window.addEventListener('resize',draw);
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+try{var saved=localStorage.getItem('cplx-expr');if(saved)fx.value=saved}catch(e){}
+Rz=Math.pow(10,parseFloat(rzS.value));
+apply();autofit();
+})();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
+</body>
+</html>
